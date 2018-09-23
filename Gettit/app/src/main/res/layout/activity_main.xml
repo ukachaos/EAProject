@@ -8,6 +8,9 @@
     tools:context=".MainActivity">
 
     <ListView
+        android:divider="@null"
+        android:dividerHeight="5dp"
+        android:id="@+id/mListPosts"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </LinearLayout>

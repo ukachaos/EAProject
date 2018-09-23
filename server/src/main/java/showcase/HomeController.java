@@ -19,11 +19,12 @@ package showcase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Arrays;
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -34,6 +35,11 @@ import java.util.List;
 @Controller
 @RequestMapping("/*")
 public class HomeController {
+
+    long id = 0;
+
+    @Resource
+    PostController controller;
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
@@ -50,27 +56,34 @@ public class HomeController {
     public @ResponseBody
     Message getMessage() {
         logger.info("Accessing protected resource");
-        return new Message(100, "Congratulations!", "You have accessed a Basic Auth protected resource.");
+        return new Message(id++, "Congratulations!", "You have accessed a Basic Auth protected resource.");
     }
 
     @RequestMapping(value = "/getposts", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     List<Post> getPosts() {
-//        logger.info("Accessing protected resource");
-//        ModelAndView mv = new ModelAndView();
-//        mv.addObject("Posts", );
-//        return mv;
-
-//        return new Post("New article", "This is just a content");
-
-        return Arrays.asList(new Post("Test title", "Test content"),
-                new Post("New article", "This is just a content"));
+        return controller.getPostList();
     }
 
-    @RequestMapping(value = "/getpost", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/getpost/{postid}*", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
-    Post getPost() {
+    Post getPost(@PathVariable("postid") int postid) {
         logger.info("Accessing protected resource");
-        return new Post("Is it working", "I think so");
+        return controller.getPost(postid);
+    }
+
+    @RequestMapping(value = "/upvote/{postid}*", method = RequestMethod.GET)
+    public @ResponseBody
+    Message upvotePost(@PathVariable("postid") int postid) {
+
+        try {
+            controller.upvotePost(postid);
+
+            return new Message(id++, "Success", "Success");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            return new Message(id++, "Fail", "Fail");
+        }
     }
 }

@@ -1,13 +1,18 @@
 package com.uka.gettit;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.springframework.http.HttpAuthentication;
@@ -17,104 +22,122 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.CommonsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class DetailedViewActivity extends AppCompatActivity {
 
-    static String TAG = ">>>>>>>";
+    static String TAG = ">>>>>>>>";
 
-    ListView mListPosts;
+    boolean showMenu = false;
+
+    private int post_id = 0;
+
+    TextView mTextTitle;
+    TextView mTextContent;
+    TextView mTextVote;
+    Button mButtonUpvote;
+    Button mButtonDownvote;
+
+    EditText mEditTextAddComment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_detailed_view);
 
-//        new FetchSecuredResourceTask().execute();
+        post_id = getIntent().getExtras().getInt("postid", 0);
 
-        mListPosts = findViewById(R.id.mListPosts);
+        mTextTitle = findViewById(R.id.mTextTitle);
+        mTextContent = findViewById(R.id.mTextContent);
+        mTextVote = findViewById(R.id.mTextVote);
+
+        mButtonUpvote = findViewById(R.id.mButtonUp);
+        mButtonUpvote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new UpdateUpvoteTask().execute(post_id);
+            }
+        });
+
+        mButtonDownvote = findViewById(R.id.mButtonDown);
+        mButtonDownvote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //TODO downvote
+            }
+        });
+
+        mEditTextAddComment = findViewById(R.id.mEditTextAddComment);
+        mEditTextAddComment.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if(b){
+                    showMenu = true;
+                    invalidateOptionsMenu();
+                }
+            }
+        });
 
         new GetPostTask().execute();
     }
 
-    public void executeUpvoteTaskt(int id) {
-        new UpdateUpvoteTask().execute(id);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (showMenu)
+            getMenuInflater().inflate(R.menu.menu_post_comment, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
-    // ***************************************
-    // Private classes
-    // ***************************************
-    private class FetchSecuredResourceTask extends AsyncTask<Void, Void, Message> {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
 
-        private String username;
-
-        private String password;
-
-        @Override
-        protected void onPreExecute() {
-
-            // build the message object
-            this.username = "roy";
-
-            this.password = "spring";
+        if (id == R.id.action_add_comment) {
+           addComment();
         }
 
-        @Override
-        protected Message doInBackground(Void... params) {
-            final String url = getString(R.string.base_uri) + "/getmessage";
-
-            // Populate the HTTP Basic Authentitcation header with the username and password
-            HttpAuthentication authHeader = new HttpBasicAuthentication(username, password);
-            HttpHeaders requestHeaders = new HttpHeaders();
-            requestHeaders.setAuthorization(authHeader);
-            requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-            // Create a new RestTemplate instance
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(new MappingJacksonHttpMessageConverter());
-
-            try {
-                // Make the network request
-                Log.d(TAG, url);
-                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Message.class);
-                return response.getBody();
-            } catch (HttpClientErrorException e) {
-                Log.e(TAG, e.getLocalizedMessage(), e);
-                return new Message(0, e.getStatusText(), e.getLocalizedMessage());
-            } catch (ResourceAccessException e) {
-                Log.e(TAG, e.getLocalizedMessage(), e);
-                return new Message(0, e.getClass().getSimpleName(), e.getLocalizedMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new Message(0, e.getClass().getSimpleName(), e.getLocalizedMessage());
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Message result) {
-            Log.e(TAG, result.toString());
-        }
-
+        return super.onOptionsItemSelected(item);
     }
 
-    private class GetPostTask extends AsyncTask<Void, Void, Post[]> {
+    private void addComment(){
+
+        mEditTextAddComment.setText("");
+        mEditTextAddComment.clearFocus();
+
+        showMenu = false;
+        invalidateOptionsMenu();
+
+        hideKeyboardFrom(this, mEditTextAddComment);
+    }
+
+    public static void hideKeyboardFrom(Context context, View view) {
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    private class PostCommentTask extends AsyncTask<Void, Void, Message>{
+
+        Comment comment;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
+            comment = new Comment();
+            comment.setComment(mEditTextAddComment.getText().toString());
+            comment.setAuthor("'");
+            comment.setId(111);
         }
 
         @Override
-        protected Post[] doInBackground(Void... voids) {
-            final String url = getString(R.string.base_uri) + "/getposts";
+        protected Message doInBackground(Void... voids) {
+            final String url = getString(R.string.base_uri) + "/getpost/" + post_id;
             // Populate the HTTP Basic Authentitcation header with the username and password
             HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
             HttpHeaders requestHeaders = new HttpHeaders();
@@ -128,14 +151,8 @@ public class MainActivity extends AppCompatActivity {
             try {
                 // Make the network request
                 Log.d(TAG, url);
-                ResponseEntity<Post[]> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Post[].class);
-                Post[] p = response.getBody();
-                Log.e(TAG, "Length" + p.length);
-                for (Post o : p) {
-                    Log.e(TAG, o.getTitle() + " - " + o.getContent());
-                }
-
-                return p;
+                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(comment, requestHeaders), Message.class);
+                return response.getBody();
             } catch (HttpClientErrorException e) {
                 Log.e(TAG, e.getLocalizedMessage(), e);
                 return null;
@@ -143,15 +160,58 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, e.getLocalizedMessage(), e);
                 return null;
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, e.getLocalizedMessage(), e);
                 return null;
             }
         }
 
         @Override
-        protected void onPostExecute(Post[] post) {
+        protected void onPostExecute(Message message) {
+            super.onPostExecute(message);
+        }
+    }
+
+    private class GetPostTask extends AsyncTask<Void, Void, Post> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Post doInBackground(Void... voids) {
+            final String url = getString(R.string.base_uri) + "/getpost/" + post_id;
+            // Populate the HTTP Basic Authentitcation header with the username and password
+            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpHeaders requestHeaders = new HttpHeaders();
+            requestHeaders.setAuthorization(authHeader);
+            requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+            // Create a new RestTemplate instance
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters().add(new MappingJacksonHttpMessageConverter());
+
+            try {
+                // Make the network request
+                Log.d(TAG, url);
+                ResponseEntity<Post> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Post.class);
+                return response.getBody();
+            } catch (HttpClientErrorException e) {
+                Log.e(TAG, e.getLocalizedMessage(), e);
+                return null;
+            } catch (ResourceAccessException e) {
+                Log.e(TAG, e.getLocalizedMessage(), e);
+                return null;
+            } catch (Exception e) {
+                Log.e(TAG, e.getLocalizedMessage(), e);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Post post) {
             super.onPostExecute(post);
-            updateListView(post);
+            updateViews(post);
         }
 
         @Override
@@ -159,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
             super.onProgressUpdate(values);
         }
     }
-
 
     private class UpdateUpvoteTask extends AsyncTask<Integer, Void, Message> {
 
@@ -178,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
             restTemplate.getMessageConverters().add(new MappingJacksonHttpMessageConverter());
 
             try {
-                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<Object>(requestHeaders), Message.class);
+                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Message.class);
 
                 return response.getBody();
 
@@ -204,29 +263,14 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, message.getSubject(), Toast.LENGTH_LONG).show();
     }
 
-    private void updateListView(Post[] posts) {
-        if (posts != null) {
-            PostsListAdapter adapter = new PostsListAdapter(this, Arrays.asList(posts));
-            mListPosts.setAdapter(adapter);
+    public void updateViews(Post post) {
+        if (post != null) {
+            mTextTitle.setText(post.getTitle());
+            mTextContent.setText(post.getContent());
+
+            mTextVote.setText(post.getUpvote() + "/" + post.getDownvote());
+        } else {
+            Toast.makeText(getApplicationContext(), "Error while getting data.", Toast.LENGTH_LONG).show();
         }
-        else
-            Toast.makeText(getApplicationContext(), "Error while getting data!", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if(id == R.id.action_add_new){
-            Toast.makeText(getApplicationContext(), "Add new", Toast.LENGTH_LONG).show();
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
