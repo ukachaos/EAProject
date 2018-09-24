@@ -68,20 +68,24 @@ public class PostsListAdapter extends BaseAdapter {
             TextView mTextVote = mView.findViewById(R.id.mTextVote);
             mTextVote.setText(p.getUpvote() + "/" + p.getDownvote());
 
+            TextView mTextComments = mView.findViewById(R.id.mTextComments);
+            mTextComments.setText(context.getString(R.string.str_comment) + "(" + p.getComments().size() + ")");
+
             Button mButtonUpvote = mView.findViewById(R.id.mButtonUp);
             mButtonUpvote.setTag(p.getId());
             mButtonUpvote.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ((MainActivity)context).executeUpvoteTaskt((int)view.getTag());
+                    ((MainActivity)context).executeUpvoteTask((int)view.getTag());
                 }
             });
 
             Button mButtonDownvote = mView.findViewById(R.id.mButtonDown);
+            mButtonDownvote.setTag(p.getId());
             mButtonDownvote.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    ((MainActivity)context).executeDownvoteTask((int)view.getTag());
                 }
             });
 

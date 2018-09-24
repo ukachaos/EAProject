@@ -9,6 +9,7 @@
     tools:context=".DetailedViewActivity">
 
     <LinearLayout
+        android:id="@+id/linearTop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -62,6 +63,15 @@
                 android:text="@string/str_downvote" />
         </LinearLayout>
     </LinearLayout>
+
+    <ListView
+        android:dividerHeight="15dp"
+        android:id="@+id/mListComments"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/mEditTextAddComment"
+        android:layout_below="@+id/linearTop"
+        android:divider="@null" />
 
     <EditText
         android:id="@+id/mEditTextAddComment"

@@ -19,10 +19,8 @@ package showcase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -85,5 +83,27 @@ public class HomeController {
 
             return new Message(id++, "Fail", "Fail");
         }
+    }
+
+    @RequestMapping(value = "/downvote/{postid}*", method = RequestMethod.GET)
+    public @ResponseBody
+    Message downvotePost(@PathVariable("postid") int postid) {
+        try {
+            controller.downvotePost(postid);
+
+            return new Message(id++, "Success", "Success");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            return new Message(id++, "Fail", "Fail");
+        }
+    }
+
+    @RequestMapping(value = "/addcomment/{postid}*", method = RequestMethod.POST)
+    //public @ResponseBody Message addComment(@RequestBody Comment comment/*, @PathVariable("postid") int postid*/) {
+    public @ResponseBody Message addComment(@RequestBody Comment comment/*, @PathVariable("postid") int postid*/) {
+        System.out.println("-------->" + "STARTED");
+        controller.addComment(102, comment);
+        return new Message(id++, "Success", "Success");
     }
 }

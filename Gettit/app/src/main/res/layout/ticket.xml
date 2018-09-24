@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
-            android:text="TextView"
+            android:text=""
             android:textColor="@color/colorGreen"
             android:textSize="15sp" />
 
@@ -51,5 +51,15 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/str_downvote" />
+
+        <TextView
+            android:id="@+id/mTextComments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="@string/str_comment"
+            android:textColor="@color/colorText"
+            android:textSize="15sp" />
     </LinearLayout>
 </LinearLayout>

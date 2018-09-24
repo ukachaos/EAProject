@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Gettit Your Dream Job</string>
-    <!--<string name="base_uri">http://10.0.2.2:8080</string>-->
-    <string name="base_uri">http://10.10.54.6:8080</string>
+    <string name="base_uri">http://10.0.2.2:8080</string>
+    <!--<string name="base_uri">http://10.10.54.6:8080</string>-->
 
 
     <string name="str_upvote">Up</string>

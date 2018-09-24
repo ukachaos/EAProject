@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +32,8 @@ import java.util.Collections;
 
 public class DetailedViewActivity extends AppCompatActivity {
 
+    Post post;
+
     static String TAG = ">>>>>>>>";
 
     boolean showMenu = false;
@@ -44,6 +47,10 @@ public class DetailedViewActivity extends AppCompatActivity {
     Button mButtonDownvote;
 
     EditText mEditTextAddComment;
+
+    ListView mListComments;
+
+    CommentAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +75,7 @@ public class DetailedViewActivity extends AppCompatActivity {
         mButtonDownvote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO downvote
+                new UpdateDownvoteTask().execute(post_id);
             }
         });
 
@@ -83,6 +90,8 @@ public class DetailedViewActivity extends AppCompatActivity {
                 }
             }
         });
+
+        mListComments = findViewById(R.id.mListComments);
 
         new GetPostTask().execute();
     }
@@ -107,8 +116,24 @@ public class DetailedViewActivity extends AppCompatActivity {
 
     private void addComment(){
 
+        String comment = mEditTextAddComment.getText().toString();
+        new PostCommentTask().execute(comment);
+
         mEditTextAddComment.setText("");
         mEditTextAddComment.clearFocus();
+
+        if(post != null)
+        {
+            Comment c = new Comment();
+            c.setComment(comment);
+            c.setAuthor("Uka");
+
+            post.addComment(c);
+
+            if(adapter!= null){
+                mListComments.invalidate();
+            }
+        }
 
         showMenu = false;
         invalidateOptionsMenu();
@@ -121,7 +146,7 @@ public class DetailedViewActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
-    private class PostCommentTask extends AsyncTask<Void, Void, Message>{
+    private class PostCommentTask extends AsyncTask<String, Void, Message>{
 
         Comment comment;
 
@@ -130,14 +155,16 @@ public class DetailedViewActivity extends AppCompatActivity {
             super.onPreExecute();
 
             comment = new Comment();
-            comment.setComment(mEditTextAddComment.getText().toString());
-            comment.setAuthor("'");
+            comment.setComment("");
+            comment.setAuthor("Uka");
             comment.setId(111);
         }
 
         @Override
-        protected Message doInBackground(Void... voids) {
-            final String url = getString(R.string.base_uri) + "/getpost/" + post_id;
+        protected Message doInBackground(String... args) {
+            comment.setComment(args[0]);
+
+            final String url = getString(R.string.base_uri) + "/addcomment/" + post_id;
             // Populate the HTTP Basic Authentitcation header with the username and password
             HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
             HttpHeaders requestHeaders = new HttpHeaders();
@@ -150,9 +177,11 @@ public class DetailedViewActivity extends AppCompatActivity {
 
             try {
                 // Make the network request
-                Log.d(TAG, url);
-                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(comment, requestHeaders), Message.class);
+                Log.d(TAG, url + "Comment : " + comment.getComment());
+                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(comment, requestHeaders), Message.class);
+//                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Message.class);
                 return response.getBody();
+
             } catch (HttpClientErrorException e) {
                 Log.e(TAG, e.getLocalizedMessage(), e);
                 return null;
@@ -168,6 +197,8 @@ public class DetailedViewActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Message message) {
             super.onPostExecute(message);
+
+            showMessageResult(message);
         }
     }
 
@@ -259,16 +290,65 @@ public class DetailedViewActivity extends AppCompatActivity {
         }
     }
 
+    private class UpdateDownvoteTask extends AsyncTask<Integer, Void, Message> {
+
+        @Override
+        protected Message doInBackground(Integer... integers) {
+
+            final String url = getString(R.string.base_uri) + "/downvote/" + integers[0];
+            // Populate the HTTP Basic Authentitcation header with the username and password
+            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpHeaders requestHeaders = new HttpHeaders();
+            requestHeaders.setAuthorization(authHeader);
+            requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+            // Create a new RestTemplate instance
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters().add(new MappingJacksonHttpMessageConverter());
+
+            try {
+                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Message.class);
+
+                return response.getBody();
+
+            } catch (HttpClientErrorException e) {
+                Log.e(TAG, e.getLocalizedMessage(), e);
+                return null;
+            } catch (ResourceAccessException e) {
+                Log.e(TAG, e.getLocalizedMessage(), e);
+                return null;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Message message) {
+            super.onPostExecute(message);
+            if (message != null)
+                showMessageResult(message);
+        }
+    }
+
     private void showMessageResult(Message message) {
-        Toast.makeText(this, message.getSubject(), Toast.LENGTH_LONG).show();
+        if(message!=null) {
+            Toast.makeText(this, message.getSubject(), Toast.LENGTH_LONG).show();
+        }
     }
 
     public void updateViews(Post post) {
         if (post != null) {
+
+            this.post = post;
+
             mTextTitle.setText(post.getTitle());
             mTextContent.setText(post.getContent());
 
             mTextVote.setText(post.getUpvote() + "/" + post.getDownvote());
+
+            adapter = new CommentAdapter(this, post.getComments());
+            mListComments.setAdapter(adapter);
         } else {
             Toast.makeText(getApplicationContext(), "Error while getting data.", Toast.LENGTH_LONG).show();
         }

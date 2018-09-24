@@ -17,11 +17,11 @@ public class Post {
 
     private List<Comment> comments;
 
-    public Post(){
+    public Post() {
 
     }
 
-    public Post(int id, String title, String content){
+    public Post(int id, String title, String content) {
         this.title = title;
         this.content = content;
 
@@ -87,16 +87,12 @@ public class Post {
         this.comments = comments;
     }
 
-    public boolean addComment(Comment comment){
-        if(comments.contains(comment)){
-            return comments.add(comment);
-        }
-
-        return false;
+    public boolean addComment(Comment comment) {
+        return comments.add(comment);
     }
 
-    public boolean removeComment(Comment comment){
-        if(comments.contains(comment)){
+    public boolean removeComment(Comment comment) {
+        if (comments.contains(comment)) {
             return comments.remove(comment);
         }
 

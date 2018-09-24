@@ -10,11 +10,25 @@ public class PostControllerImpl implements PostController {
 
     List<Post> posts;
 
-    public PostControllerImpl(){
+    public PostControllerImpl() {
         posts = new ArrayList<Post>();
 
         posts.add(new Post(100, "Post1", "Testing post 1"));
         posts.add(new Post(101, "Post2", "Testing post 2"));
+
+        Post p = new Post(102, "Post with comment", "Test post with comments");
+
+
+        Comment comment = new Comment(1, "Uka", "this is a comment");
+
+        Comment comment1 = new Comment(2, "User", "this is a user comment");
+
+        System.out.println("---------->" + p.addComment(comment));
+        System.out.println("---------->" + p.addComment(comment1));
+
+        posts.add(p);
+
+        System.out.println("---------->" + p.getComments().size());
     }
 
     @Override
@@ -44,8 +58,8 @@ public class PostControllerImpl implements PostController {
     @Override
     public Post getPost(int id) {
 
-        for(Post p : posts){
-            if(p.getId() == id){
+        for (Post p : posts) {
+            if (p.getId() == id) {
                 return p;
             }
         }
@@ -75,8 +89,7 @@ public class PostControllerImpl implements PostController {
     public void downvotePost(int id) {
         for (Post p : posts) {
             if (p.getId() == id) {
-                if (p.getUpvote() > 0)
-                    p.setUpvote(p.getUpvote() - 1);
+                p.setDownvote(p.getDownvote() + 1);
             }
         }
     }

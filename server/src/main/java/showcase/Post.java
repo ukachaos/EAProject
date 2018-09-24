@@ -95,11 +95,7 @@ public class Post {
     }
 
     public boolean addComment(Comment comment){
-        if(comments.contains(comment)){
             return comments.add(comment);
-        }
-
-        return false;
     }
 
     public boolean removeComment(Comment comment){

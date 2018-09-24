@@ -17,7 +17,8 @@ public class Comment {
 
     }
 
-    public Comment(String author, String comment){
+    public Comment(int id, String author, String comment){
+        this.id = id;
         this.author = author;
         this.comment = comment;
     }

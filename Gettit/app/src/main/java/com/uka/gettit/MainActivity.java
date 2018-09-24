@@ -45,8 +45,12 @@ public class MainActivity extends AppCompatActivity {
         new GetPostTask().execute();
     }
 
-    public void executeUpvoteTaskt(int id) {
+    public void executeUpvoteTask(int id) {
         new UpdateUpvoteTask().execute(id);
+    }
+
+    public void executeDownvoteTask(int id) {
+        new UpdateDownvoteTask().execute(id);
     }
 
     // ***************************************
@@ -132,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 Post[] p = response.getBody();
                 Log.e(TAG, "Length" + p.length);
                 for (Post o : p) {
-                    Log.e(TAG, o.getTitle() + " - " + o.getContent());
+                    Log.e(TAG, o.getTitle() + " - " + o.getContent() + " -> " + o.getComments().size());
                 }
 
                 return p;
@@ -178,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
             restTemplate.getMessageConverters().add(new MappingJacksonHttpMessageConverter());
 
             try {
-                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<Object>(requestHeaders), Message.class);
+                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Message.class);
 
                 return response.getBody();
 
@@ -200,6 +204,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private class UpdateDownvoteTask extends AsyncTask<Integer, Void, Message> {
+
+        @Override
+        protected Message doInBackground(Integer... integers) {
+
+            final String url = getString(R.string.base_uri) + "/downvote/" + integers[0];
+            // Populate the HTTP Basic Authentitcation header with the username and password
+            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpHeaders requestHeaders = new HttpHeaders();
+            requestHeaders.setAuthorization(authHeader);
+            requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+            // Create a new RestTemplate instance
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters().add(new MappingJacksonHttpMessageConverter());
+
+            try {
+                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Message.class);
+
+                return response.getBody();
+
+            } catch (HttpClientErrorException e) {
+                Log.e(TAG, e.getLocalizedMessage(), e);
+                return null;
+            } catch (ResourceAccessException e) {
+                Log.e(TAG, e.getLocalizedMessage(), e);
+                return null;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Message message) {
+            super.onPostExecute(message);
+            if (message != null)
+                showMessageResult(message);
+        }
+    }
+
     private void showMessageResult(Message message) {
         Toast.makeText(this, message.getSubject(), Toast.LENGTH_LONG).show();
     }
@@ -208,8 +253,7 @@ public class MainActivity extends AppCompatActivity {
         if (posts != null) {
             PostsListAdapter adapter = new PostsListAdapter(this, Arrays.asList(posts));
             mListPosts.setAdapter(adapter);
-        }
-        else
+        } else
             Toast.makeText(getApplicationContext(), "Error while getting data!", Toast.LENGTH_LONG).show();
     }
 
@@ -223,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.action_add_new){
+        if (id == R.id.action_add_new) {
             Toast.makeText(getApplicationContext(), "Add new", Toast.LENGTH_LONG).show();
         }
 
