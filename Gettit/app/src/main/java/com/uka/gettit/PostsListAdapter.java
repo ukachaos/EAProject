@@ -19,7 +19,7 @@ public class PostsListAdapter extends BaseAdapter {
 
     List<Post> posts;
 
-    public PostsListAdapter(Context context, List<Post> posts){
+    public PostsListAdapter(Context context, List<Post> posts) {
         this.context = context;
         this.posts = posts;
 
@@ -44,7 +44,7 @@ public class PostsListAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
 
-        if(view == null) {
+        if (view == null) {
             Post p = posts.get(i);
 
             View mView = inflater.inflate(R.layout.ticket, null);
@@ -53,7 +53,7 @@ public class PostsListAdapter extends BaseAdapter {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(context, DetailedViewActivity.class);
-                    intent.putExtra("postid", (int)view.getTag());
+                    intent.putExtra("postid", (int) view.getTag());
                     context.startActivity(intent);
                 }
             });
@@ -68,6 +68,16 @@ public class PostsListAdapter extends BaseAdapter {
             TextView mTextVote = mView.findViewById(R.id.mTextVote);
             mTextVote.setText(p.getUpvote() + "/" + p.getDownvote());
 
+            if (p.getUpvote() < p.getDownvote()) {
+                mTextVote.setTextColor(context.getResources().getColor(R.color.colorRed));
+            }
+
+            TextView mTextUser = mView.findViewById(R.id.mTextUser);
+            mTextUser.setText(p.getAuthor());
+
+            TextView mTextTag = mView.findViewById(R.id.mTextTag);
+            mTextTag.setText(p.getTag());
+
             TextView mTextComments = mView.findViewById(R.id.mTextComments);
             mTextComments.setText(context.getString(R.string.str_comment) + "(" + p.getComments().size() + ")");
 
@@ -76,7 +86,7 @@ public class PostsListAdapter extends BaseAdapter {
             mButtonUpvote.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ((MainActivity)context).executeUpvoteTask((int)view.getTag());
+                    ((MainActivity) context).executeUpvoteTask((int) view.getTag());
                 }
             });
 
@@ -85,7 +95,7 @@ public class PostsListAdapter extends BaseAdapter {
             mButtonDownvote.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ((MainActivity)context).executeDownvoteTask((int)view.getTag());
+                    ((MainActivity) context).executeDownvoteTask((int) view.getTag());
                 }
             });
 

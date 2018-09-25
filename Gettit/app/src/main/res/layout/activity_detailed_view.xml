@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorMain"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:orientation="vertical"
     tools:context=".DetailedViewActivity">
 
@@ -19,7 +21,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="5dp"
-            android:text="TextView"
             android:textColor="@color/colorText"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -29,7 +30,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="5dp"
-            android:text="TextView"
             android:textColor="@color/colorText"
             android:textSize="16sp" />
 
@@ -51,7 +51,6 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
-                android:text="TextView"
                 android:textColor="@color/colorGreen"
                 android:textSize="15sp" />
 
@@ -65,13 +64,13 @@
     </LinearLayout>
 
     <ListView
-        android:dividerHeight="15dp"
         android:id="@+id/mListComments"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/mEditTextAddComment"
         android:layout_below="@+id/linearTop"
-        android:divider="@null" />
+        android:divider="@null"
+        android:dividerHeight="15dp" />
 
     <EditText
         android:id="@+id/mEditTextAddComment"
@@ -80,6 +79,7 @@
         android:layout_alignParentBottom="true"
         android:ems="10"
         android:hint="@string/str_add_comment"
-        android:inputType="text" />
+        android:inputType="text"
+        android:textColor="@color/colorText" />
 
 </RelativeLayout>

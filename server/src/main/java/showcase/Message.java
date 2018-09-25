@@ -19,7 +19,7 @@ package showcase;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * @author Roy Clarkson
+ * @author Uka
  */
 @XmlRootElement(name = "message")
 public class Message {

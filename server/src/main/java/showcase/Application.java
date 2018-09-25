@@ -16,12 +16,15 @@
 
 package showcase;
 
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
- * @author Roy Clarkson
+ * @author Uka
  */
 @ComponentScan
 @EnableAutoConfiguration
@@ -31,4 +34,12 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
+//	@Bean
+//	public CommandLineRunner demo(PostController repository) {
+//		return (args) -> {
+//			// save a couple of customers
+//			repository.save(new Post(100, "Post1", "Post 1 testing"));
+//			repository.save(new Post(100, "Post2", "Post 2 testing"));
+//		};
+//	}
 }

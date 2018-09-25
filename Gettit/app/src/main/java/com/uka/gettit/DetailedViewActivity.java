@@ -2,6 +2,7 @@ package com.uka.gettit;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,7 +30,11 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.Random;
 
+/**
+ * @author Uka
+ */
 public class DetailedViewActivity extends AppCompatActivity {
 
     Post post;
@@ -52,10 +57,21 @@ public class DetailedViewActivity extends AppCompatActivity {
 
     CommentAdapter adapter;
 
+    User user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_view);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("com.uka.gettit.prefs", MODE_PRIVATE);
+        String username = sharedPreferences.getString("username", "test");
+        String password = sharedPreferences.getString("password", "123");
+
+        user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setRole("USER");
 
         post_id = getIntent().getExtras().getInt("postid", 0);
 
@@ -84,7 +100,7 @@ public class DetailedViewActivity extends AppCompatActivity {
 
             @Override
             public void onFocusChange(View view, boolean b) {
-                if(b){
+                if (b) {
                     showMenu = true;
                     invalidateOptionsMenu();
                 }
@@ -108,13 +124,13 @@ public class DetailedViewActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_add_comment) {
-           addComment();
+            addComment();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void addComment(){
+    private void addComment() {
 
         String comment = mEditTextAddComment.getText().toString();
         new PostCommentTask().execute(comment);
@@ -122,17 +138,13 @@ public class DetailedViewActivity extends AppCompatActivity {
         mEditTextAddComment.setText("");
         mEditTextAddComment.clearFocus();
 
-        if(post != null)
-        {
+        if (post != null) {
             Comment c = new Comment();
+            c.setId(new Random().nextInt());
             c.setComment(comment);
-            c.setAuthor("Uka");
+            c.setAuthor(user.getUsername());
 
             post.addComment(c);
-
-            if(adapter!= null){
-                mListComments.invalidate();
-            }
         }
 
         showMenu = false;
@@ -146,7 +158,7 @@ public class DetailedViewActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
-    private class PostCommentTask extends AsyncTask<String, Void, Message>{
+    private class PostCommentTask extends AsyncTask<String, Void, Message> {
 
         Comment comment;
 
@@ -166,7 +178,7 @@ public class DetailedViewActivity extends AppCompatActivity {
 
             final String url = getString(R.string.base_uri) + "/addcomment/" + post_id;
             // Populate the HTTP Basic Authentitcation header with the username and password
-            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpAuthentication authHeader = new HttpBasicAuthentication(user.getUsername(), user.getPassword());
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setAuthorization(authHeader);
             requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -179,7 +191,6 @@ public class DetailedViewActivity extends AppCompatActivity {
                 // Make the network request
                 Log.d(TAG, url + "Comment : " + comment.getComment());
                 ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(comment, requestHeaders), Message.class);
-//                ResponseEntity<Message> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Message.class);
                 return response.getBody();
 
             } catch (HttpClientErrorException e) {
@@ -213,7 +224,7 @@ public class DetailedViewActivity extends AppCompatActivity {
         protected Post doInBackground(Void... voids) {
             final String url = getString(R.string.base_uri) + "/getpost/" + post_id;
             // Populate the HTTP Basic Authentitcation header with the username and password
-            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpAuthentication authHeader = new HttpBasicAuthentication(user.getUsername(), user.getPassword());
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setAuthorization(authHeader);
             requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -258,7 +269,7 @@ public class DetailedViewActivity extends AppCompatActivity {
 
             final String url = getString(R.string.base_uri) + "/upvote/" + integers[0];
             // Populate the HTTP Basic Authentitcation header with the username and password
-            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpAuthentication authHeader = new HttpBasicAuthentication(user.getUsername(), user.getPassword());
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setAuthorization(authHeader);
             requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -285,7 +296,6 @@ public class DetailedViewActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Message message) {
-            super.onPostExecute(message);
             showMessageResult(message);
         }
     }
@@ -297,7 +307,7 @@ public class DetailedViewActivity extends AppCompatActivity {
 
             final String url = getString(R.string.base_uri) + "/downvote/" + integers[0];
             // Populate the HTTP Basic Authentitcation header with the username and password
-            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpAuthentication authHeader = new HttpBasicAuthentication(user.getUsername(), user.getPassword());
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setAuthorization(authHeader);
             requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -325,15 +335,18 @@ public class DetailedViewActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Message message) {
-            super.onPostExecute(message);
             if (message != null)
                 showMessageResult(message);
         }
     }
 
     private void showMessageResult(Message message) {
-        if(message!=null) {
+        if (message != null) {
             Toast.makeText(this, message.getSubject(), Toast.LENGTH_LONG).show();
+
+            if (message.getSubject().equals("Success")) {
+                new GetPostTask();
+            }
         }
     }
 
@@ -346,6 +359,10 @@ public class DetailedViewActivity extends AppCompatActivity {
             mTextContent.setText(post.getContent());
 
             mTextVote.setText(post.getUpvote() + "/" + post.getDownvote());
+
+            if (post.getUpvote() < post.getDownvote()) {
+                mTextVote.setTextColor(getResources().getColor(R.color.colorRed));
+            }
 
             adapter = new CommentAdapter(this, post.getComments());
             mListComments.setAdapter(adapter);

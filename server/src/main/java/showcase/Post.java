@@ -1,11 +1,12 @@
 package showcase;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Uka
+ */
 @Entity
 public class Post {
     @Id
@@ -20,15 +21,17 @@ public class Post {
     private String title;
     private String content;
 
+    @OneToMany(cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Comment> comments;
 
-    public Post(){
+    private String tag;
+
+    public Post() {
 
     }
 
-    public Post(int id, String title, String content){
-        this.id = id;
-
+    public Post(int id, String title, String content) {
         this.title = title;
         this.content = content;
 
@@ -94,15 +97,23 @@ public class Post {
         this.comments = comments;
     }
 
-    public boolean addComment(Comment comment){
-            return comments.add(comment);
+    public boolean addComment(Comment comment) {
+        return comments.add(comment);
     }
 
-    public boolean removeComment(Comment comment){
-        if(comments.contains(comment)){
+    public boolean removeComment(Comment comment) {
+        if (comments.contains(comment)) {
             return comments.remove(comment);
         }
 
         return false;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getTag() {
+        return tag;
     }
 }

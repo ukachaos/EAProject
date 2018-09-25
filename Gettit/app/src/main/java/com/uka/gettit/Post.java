@@ -17,13 +17,17 @@ public class Post {
 
     private List<Comment> comments;
 
+    private String tag;
+
     public Post() {
 
     }
 
-    public Post(int id, String title, String content) {
+    public Post(String title, String content, String tag, String author) {
         this.title = title;
         this.content = content;
+        this.tag = tag;
+        this.author = author;
 
         upvote = 0;
         downvote = 0;
@@ -97,5 +101,13 @@ public class Post {
         }
 
         return false;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getTag() {
+        return tag;
     }
 }

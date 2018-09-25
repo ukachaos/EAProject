@@ -1,12 +1,13 @@
 package com.uka.gettit;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -17,7 +18,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.CommonsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
@@ -25,24 +25,35 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
+/**
+ * @author Uka
+ */
 public class MainActivity extends AppCompatActivity {
 
     static String TAG = ">>>>>>>";
 
     ListView mListPosts;
 
+    User user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        new FetchSecuredResourceTask().execute();
+        SharedPreferences sharedPreferences = getSharedPreferences("com.uka.gettit.prefs", MODE_PRIVATE);
+        String username = sharedPreferences.getString("username", "test");
+        String password = sharedPreferences.getString("password", "123");
+
+        Log.e(TAG, "----->" + username + " - " + password);
+
+        user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setRole("USER");
 
         mListPosts = findViewById(R.id.mListPosts);
-
-        new GetPostTask().execute();
     }
 
     public void executeUpvoteTask(int id) {
@@ -53,9 +64,6 @@ public class MainActivity extends AppCompatActivity {
         new UpdateDownvoteTask().execute(id);
     }
 
-    // ***************************************
-    // Private classes
-    // ***************************************
     private class FetchSecuredResourceTask extends AsyncTask<Void, Void, Message> {
 
         private String username;
@@ -66,9 +74,9 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
 
             // build the message object
-            this.username = "roy";
+            this.username = user.getUsername();
 
-            this.password = "spring";
+            this.password = user.getPassword();
         }
 
         @Override
@@ -120,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         protected Post[] doInBackground(Void... voids) {
             final String url = getString(R.string.base_uri) + "/getposts";
             // Populate the HTTP Basic Authentitcation header with the username and password
-            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpAuthentication authHeader = new HttpBasicAuthentication(user.getUsername(), user.getPassword());
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setAuthorization(authHeader);
             requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -172,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
             final String url = getString(R.string.base_uri) + "/upvote/" + integers[0];
             // Populate the HTTP Basic Authentitcation header with the username and password
-            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpAuthentication authHeader = new HttpBasicAuthentication(user.getUsername(), user.getPassword());
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setAuthorization(authHeader);
             requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -211,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
 
             final String url = getString(R.string.base_uri) + "/downvote/" + integers[0];
             // Populate the HTTP Basic Authentitcation header with the username and password
-            HttpAuthentication authHeader = new HttpBasicAuthentication("roy", "spring");
+            HttpAuthentication authHeader = new HttpBasicAuthentication(user.getUsername(), user.getPassword());
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setAuthorization(authHeader);
             requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -246,7 +254,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMessageResult(Message message) {
-        Toast.makeText(this, message.getSubject(), Toast.LENGTH_LONG).show();
+        if (message != null) {
+            Toast.makeText(this, message.getSubject(), Toast.LENGTH_LONG).show();
+
+            if (message.getSubject().equals("Success")) {
+                new GetPostTask().execute();
+            }
+        } else {
+            Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void updateListView(Post[] posts) {
@@ -268,9 +284,17 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_add_new) {
-            Toast.makeText(getApplicationContext(), "Add new", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, AddNewPost.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        new GetPostTask().execute();
     }
 }

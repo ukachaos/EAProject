@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorMain"
+    android:orientation="vertical"
+    android:padding="5dp"
+    tools:context=".AddNewPost">
+
+    <EditText
+        android:id="@+id/mEdittextTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Title"
+        android:inputType="text"
+        android:textColor="@color/colorText" />
+
+    <EditText
+        android:id="@+id/mEdittextContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:ems="10"
+        android:hint="Content"
+        android:inputType="textMultiLine"
+        android:lines="5"
+        android:maxLines="5"
+        android:textColor="@color/colorText" />
+
+    <EditText
+        android:id="@+id/mEdittextTag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:ems="10"
+        android:hint="Tag"
+        android:inputType="textPersonName"
+        android:textColor="@color/colorText" />
+</LinearLayout>
