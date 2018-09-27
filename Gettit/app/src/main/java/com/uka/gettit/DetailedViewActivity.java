@@ -168,7 +168,7 @@ public class DetailedViewActivity extends AppCompatActivity {
 
             comment = new Comment();
             comment.setComment("");
-            comment.setAuthor("Uka");
+            comment.setAuthor(user.getUsername());
             comment.setId(111);
         }
 

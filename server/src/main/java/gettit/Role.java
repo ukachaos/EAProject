@@ -1,4 +1,4 @@
-package showcase;
+package gettit;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

@@ -1,4 +1,4 @@
-package showcase;
+package gettit;
 
 import org.springframework.data.repository.CrudRepository;
 

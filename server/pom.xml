@@ -61,7 +61,7 @@
     </dependencies>
 
     <properties>
-        <start-class>showcase.Application</start-class>
+        <start-class>gettit.Application</start-class>
     </properties>
 
     <build>

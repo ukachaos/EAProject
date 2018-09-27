@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         user = new User();
         user.setUsername(username);
         user.setPassword(password);
-        user.setRole("USER");
+        user.setRole("ROLE_USER");
 
         mListPosts = findViewById(R.id.mListPosts);
     }
@@ -140,7 +140,8 @@ public class MainActivity extends AppCompatActivity {
             try {
                 // Make the network request
                 Log.d(TAG, url);
-                ResponseEntity<Post[]> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Post[].class);
+                ResponseEntity<Post[]> response = restTemplate.exchange(url,
+                        HttpMethod.GET, new HttpEntity<Object>(requestHeaders), Post[].class);
                 Post[] p = response.getBody();
                 Log.e(TAG, "Length" + p.length);
                 for (Post o : p) {

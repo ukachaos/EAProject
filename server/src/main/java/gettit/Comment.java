@@ -1,9 +1,12 @@
-package showcase;
+package gettit;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+/**
+ * @author Uka
+ */
 @Entity
 public class Comment {
     @Id
